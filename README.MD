@@ -65,8 +65,8 @@ Sigue estos pasos desde la raíz del directorio del proyecto:
 1.  **Clonar el Repositorio (si aplica):**
 
     ```bash
-    git clone [https://github.com/tu_usuario/tu_repositorio](https://github.com/tu_usuario/tu_repositorio) # Reemplaza con tu URL real
-    cd tu_repositorio
+    git clone https://github.com/p163j02/tarea_1_sd
+    cd tarea_1_sd
     ```
 
 2.  **Iniciar Servicios Base:**
@@ -116,7 +116,7 @@ Los scripts para ejecutar los experimentos se encuentran en la carpeta `scripts/
       ./run_experiment.sh
       ```
 
-    _(Nota: Si estás usando PowerShell en Windows y tienes scripts `.ps1` equivalentes, ejecuta `.\run_experiment_....ps1`)\_
+    _(Nota: Si estás usando PowerShell en Windows y tienes scripts `.ps1` equivalentes, ejecuta `.\run_experiment_....ps1`)_
 
     Los resultados se registrarán automáticamente en los archivos `.csv` correspondientes dentro del directorio `tarea_1_sd/results/` (o donde esté mapeado el volumen `results-data` en `docker-compose.yml`).
 
