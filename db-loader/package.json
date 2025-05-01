@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "mongodb": "^6.16.0"
+  },
+  "type": "module",
+  "name": "db-loader",
+  "version": "1.0.0",
+  "main": "loader.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

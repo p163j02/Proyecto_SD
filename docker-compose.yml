@@ -1,0 +1,113 @@
+version: '3.8'
+
+volumes:
+  mongodb_data_compose: 
+
+networks:
+  waze-net:
+    driver: bridge
+
+services:
+  # --- Servicio MongoDB (el mismo para todos) ---
+  mongo:
+    image: mongo:latest
+    container_name: mongo_db
+    restart: always
+    networks:
+      - waze-net
+    volumes:
+      - mongodb_data_compose:/data/db
+
+  # --- Servicio Redis ---
+  redis:
+    image: redis:latest
+    container_name: redis_cache
+    restart: always
+    networks:
+      - waze-net
+    command: ["redis-server", "--maxmemory", "${REDIS_MAXMEMORY_VAR:-100mb}", "--maxmemory-policy", "${REDIS_POLICY_VAR:-allkeys-lru}"]
+
+  # --- Servicio Cache ---
+  cache:
+    build:
+      context: ./cache
+      dockerfile: Dockerfile
+    container_name: cache_service
+    restart: unless-stopped
+    networks:
+      - waze-net
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      - MONGO_CONECTION=mongodb://mongo:27017 
+      - MONGO_DB_NAME=Waze
+      - MONGO_COLLECTION_NAME=Events
+      - REDIS_HOST=redis 
+      - REDIS_PORT=6379
+      - PORT=3001
+
+  # --- Servicio Generador de Tráfico ---
+  traffic-generator:
+    build:
+      context: ./traffic-generator
+      dockerfile: Dockerfile
+    container_name: traffic_generator_service
+    restart: on-failure 
+    networks:
+      - waze-net
+    depends_on:
+      - mongo
+      - cache
+    environment:
+      - MONGO_CONECTION=mongodb://mongo:27017 
+      - MONGO_DB_NAME=Waze
+      - MONGO_COLLECTION_NAME=Events
+      - CACHE_SERVICE_URL=http://cache:3001/event 
+      # - REDIS_POLICY=allkeys-lru
+      # - REDIS_MAXMEMORY=100mb
+      - TOTAL_QUERIES=2000 # O el valor que desees para las pruebas compose
+      - REDIS_POLICY=${REDIS_POLICY_VAR:-allkeys-lru}
+      - REDIS_MAXMEMORY=${REDIS_MAXMEMORY_VAR:-100mb}
+    volumes:
+      - ./results:/usr/src/app/results 
+
+  # --- Servicio DB Loader (para ejecutar manualmente) ---
+  db-loader:
+    build:
+      context: ./db-loader
+      dockerfile: Dockerfile
+    container_name: db_loader_script
+    networks:
+      - waze-net
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_CONECTION=mongodb://mongo:27017
+      - MONGO_DB_NAME=Waze
+      - MONGO_COLLECTION_NAME=Events
+    volumes: 
+        - ./data:/usr/src/app/data
+
+  # --- Servicio Scraper --- 
+  scraper:
+    build:
+      context: ./scraper 
+      dockerfile: Dockerfile
+    container_name: scraper_service
+    restart: unless-stopped 
+    networks:
+      - waze-net
+    depends_on:
+      - mongo 
+    environment:
+
+      - LIVE_MONGO_CONECTION=mongodb://mongo:27017
+      - LIVE_MONGO_DB_NAME=WazeLive
+      - LIVE_MONGO_COLLECTION_NAME=RealtimeEvents
+      - OUTPUT_DIR=./scraped_data
+
+    volumes:
+      - ./scraped_data:/usr/src/app/scraped_data

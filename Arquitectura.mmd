@@ -1,0 +1,40 @@
+flowchart LR
+ subgraph subGraph0["Flujo Principal (Experimentos)"]
+        TG["Traffic Generator (Node.js)"]
+        CACHE_API["Cache API (Node.js)"]
+        REDIS["Redis (Docker)"]
+        MONGO_MAIN["MongoDB (Docker - Waze.Events)"]
+        LOADER["DB Loader (Node.js)"]
+        JSON_DATA["waze_10k_events.json (data/)"]
+  end
+ subgraph subGraph1["Flujo Scraper"]
+    direction RL
+        SCRAPER["Scraper (Node.js)"]
+        WAZE_API["Waze LiveMap API"]
+        JSON_OUT["JSON Files (scraped_data/)"]
+  end
+    LOADER -- Lee --> JSON_DATA
+    LOADER -- Carga Inicial --> MONGO_MAIN
+    TG -- 1 Envía Consulta HTTP --> CACHE_API
+    CACHE_API -- 2 Check Cache (GET) --> REDIS
+    CACHE_API -- 3 Cache Miss --> MONGO_MAIN
+    MONGO_MAIN -- 4 Devuelve Evento --> CACHE_API
+    CACHE_API -- 5 Guarda en Caché (SET) --> REDIS
+    REDIS -- 6 OK --> CACHE_API
+    CACHE_API -- 7 Devuelve Evento --> TG
+    REDIS -- "2.1 Cache Hit" --> CACHE_API
+    WAZE_API -- Extrae Datos --> SCRAPER
+    SCRAPER -- Guarda Archivo --> JSON_OUT
+
+
+    style TG fill:#f9f,stroke:#333,stroke-width:2px
+    style CACHE_API fill:#ccf,stroke:#333,stroke-width:2px
+    style REDIS fill:#fcc,stroke:#333,stroke-width:2px
+    style MONGO_MAIN fill:#cdf,stroke:#333,stroke-width:2px
+    style LOADER fill:#f9f,stroke:#333,stroke-width:2px
+    style JSON_DATA fill:#eee,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    style SCRAPER fill:#f9f,stroke:#333,stroke-width:2px
+    style WAZE_API fill:#fff,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    style JSON_OUT fill:#eee,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+
+
