@@ -1,0 +1,13 @@
+Timestamp,RedisPolicy,RedisMaxMemory,SimulationType,TotalQueries,CacheHits,CacheMisses,Errors,HitRatePercent
+2025-04-30T01:31:21.524Z,allkeys-random,10mb,PoissonRate,2000,206,1794,0,10.30
+2025-04-30T01:33:24.706Z,allkeys-random,10mb,PoissonRate,2000,194,1806,0,9.70
+2025-04-30T01:40:18.351Z,allkeys-random,25mb,ConstantRate,2000,125,1875,0,6.25
+2025-04-30T01:45:20.692Z,allkeys-random,25mb,PoissonRate,2000,182,1818,0,9.10
+2025-04-30T01:52:14.237Z,allkeys-random,100mb,ConstantRate,2000,141,1859,0,7.05
+2025-04-30T01:57:23.063Z,allkeys-random,100mb,PoissonRate,2000,171,1829,0,8.55
+2025-04-30T02:04:16.472Z,allkeys-lru,10mb,ConstantRate,2000,136,1864,0,6.80
+2025-04-30T02:09:21.420Z,allkeys-lru,10mb,PoissonRate,2000,175,1825,0,8.75
+2025-04-30T02:16:15.026Z,allkeys-lru,25mb,ConstantRate,2000,129,1871,0,6.45
+2025-04-30T02:21:13.752Z,allkeys-lru,25mb,PoissonRate,2000,183,1817,0,9.15
+2025-04-30T02:28:07.169Z,allkeys-lru,100mb,ConstantRate,2000,113,1887,0,5.65
+2025-04-30T02:33:09.900Z,allkeys-lru,100mb,PoissonRate,2000,188,1812,0,9.40
