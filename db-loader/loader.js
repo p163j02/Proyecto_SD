@@ -22,7 +22,7 @@ async function bulkInsert() {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
 
-    const filePath = path.join(__dirname, "data", "waze_10k_events.json");
+    const filePath = path.join(__dirname, "data", "waze_50k_events.json");
 
     console.log(`Leyendo archivo desde: ${filePath}`);
     const rawData = readFileSync(filePath, "utf8");
