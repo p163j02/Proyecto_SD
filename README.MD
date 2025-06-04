@@ -233,7 +233,15 @@ El flujo se orquesta principalmente a través del servicio `processing_pipeline`
     docker-compose run --rm db-loader
     ```
 
-3.  **Construir y ejecutar el pipeline de procesamiento de Tarea 2:**
+3.  **Instalar dependencias para el script "preprocesado_eventos.js":**
+
+    ```bash
+    cd filtrado_y_procesado/scripts/filtrador
+    npm init -y
+    npm install @turf/turf
+    ```
+
+4.  **Construir y ejecutar el pipeline de procesamiento de Tarea 2:**
 
     ```bash
     # Para construir la imagen si hay cambios en filtrado_y_procesado/Dockerfile
@@ -246,7 +254,7 @@ El flujo se orquesta principalmente a través del servicio `processing_pipeline`
 
     _La opción `-d` ejecuta el contenedor en modo detached (segundo plano). Puedes omitirla para ver los logs directamente en la terminal._
 
-4.  **Monitorear los Logs (si se ejecutó en modo detached):**
+5.  **Monitorear los Logs (si se ejecutó en modo detached):**
 
     ```bash
     docker logs -f tarea2_processing_pipeline
@@ -254,7 +262,7 @@ El flujo se orquesta principalmente a través del servicio `processing_pipeline`
 
     Esto te mostrará el progreso a través de los pasos definidos en `filtrado_y_procesado/entrypoint.sh`.
 
-5.  **Acceder a los Resultados:**
+6.  **Acceder a los Resultados:**
     Una vez que el script `entrypoint.sh` finalice, los resultados del procesamiento de Pig (archivos CSV) estarán disponibles en tu máquina local en la carpeta:
     `./filtrado_y_procesado/output_del_proyecto/`
     Dentro de esta, encontrarás subdirectorios como `conteo_eventos_por_comuna_tipo/`, `conteo_eventos_por_tipo_hora/`, etc., cada uno conteniendo los archivos `part-m-00000` con los datos.
