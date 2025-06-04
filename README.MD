@@ -265,37 +265,52 @@ Para realizar pruebas con diferentes volúmenes de datos o conjuntos de eventos 
 
 **Pasos para Recargar Datos:**
 
-1.  **Asegurar que MongoDB esté en ejecución:**
+1. **Asegurarse de eliminar el contenedor de tarea2_processing_pipeline:**
+   Detener y eliminar contenedor antes de todo
+
+```bash
+docker container stop tarea2_processing_pipeline
+docker container rm tarea2_processing_pipeline
+```
+
+2.  **Asegurar que MongoDB esté en ejecución:**
     Si el servicio MongoDB no está corriendo, inícialo:
 
-    ```bash
-    # Desde el directorio raíz de Proyecto_SD/
-    docker-compose up -d mongo
-    ```
+```bash
+# Desde el directorio raíz de Proyecto_SD/
+docker-compose up -d mongo
+```
 
-2.  **Limpiar la Colección `Events` Existente en MongoDB:**
+3.  **Limpiar la Colección `Events` Existente en MongoDB:**
     Accede al shell de MongoDB dentro del contenedor `mongodb` y borra la colección.
 
-    ```bash
-    # Desde tu PC, en una nueva terminal:
-    docker-compose exec mongo mongosh
-    ```
+```bash
+# Desde tu PC, en una nueva terminal:
+docker-compose exec mongo mongosh
+```
 
-    Una vez dentro del shell de `mongosh`:
+Una vez dentro del shell de `mongosh`:
 
-    ```javascript
-    use Waze;         // Cambia a la base de datos 'Waze'.
-    db.Events.drop(); // Borra la colección 'Events'.
-    exit;             // Sale del shell
-    ```
+```javascript
+use Waze;         // Cambia a la base de datos 'Waze'.
+db.Events.drop(); // Borra la colección 'Events'.
+exit;             // Sale del shell
+```
 
-    Esto asegurará que la próxima carga se realice sobre una colección vacía.
+Esto asegurará que la próxima carga se realice sobre una colección vacía.
 
-3.  **Seleccionar el Nuevo Archivo JSON de Entrada para `db-loader`:**
-4.  - **Modifica `db-loader/loader.js`** (si aún no lo has hecho) para leer un nuevo archivo de datos .json, solo hace falta cambiar el archivo que leé `filePath` en la linea 25 (cuyo valor podría ser `waze_10k_events`, `waze_50k_events`, `waze_100k_events`)
-    - Asegúrate de que los archivos JSON correspondientes (ej. `waze_10k_events.json`, `waze_50k_events.json`) existan en el directorio `./data/` de tu proyecto en la máquina host, ya que este directorio se monta en `/usr/src/app/data/` dentro del contenedor `db-loader` según la configuración de Tarea 1.
+4.  **Seleccionar el Nuevo Archivo JSON de Entrada para `db-loader`:**
+5.  - **Modifica `db-loader/loader.js`** (si aún no lo has hecho) para leer un nuevo archivo de datos .json, solo hace falta cambiar el archivo que leé `filePath` en la linea 25 (cuyo valor podría ser `waze_10k_events`, `waze_50k_events`, `waze_100k_events`)
 
-5.  **Ejecutar `db-loader` para Cargar los Nuevos Datos:**
+- Asegúrate de que los archivos JSON correspondientes (ej. `waze_10k_events.json`, `waze_50k_events.json`) existan en el directorio `./data/` de tu proyecto en la máquina host, ya que este directorio se monta en `/usr/src/app/data/` dentro del contenedor `db-loader` según la configuración de Tarea 1.
+
+6.  **Reconstruir la imagen**
+
+```bash
+docker-compose build db-loader
+```
+
+7.  **Ejecutar `db-loader` para Cargar los Nuevos Datos:**
     Ejecuta el servicio `db-loader`
 
 ```bash

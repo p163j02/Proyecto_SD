@@ -1,4 +1,15 @@
-{"type": "module",
+{
+  "name": "filtrador",
+  "version": "1.0.0",
+  "main": "preprocesar_eventos.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
   "dependencies": {
     "@turf/turf": "^7.2.0"
   }
