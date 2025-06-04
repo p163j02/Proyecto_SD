@@ -111,3 +111,26 @@ services:
 
     volumes:
       - ./scraped_data:/usr/src/app/scraped_data
+
+  #  --- Servicio Filtrado y Procesado PIG --- 
+  processing_pipeline:
+    build:
+      context: ./filtrado_y_procesado 
+      dockerfile: Dockerfile 
+    container_name: tarea2_processing_pipeline
+    depends_on:
+      - mongo 
+    volumes:
+      - ./filtrado_y_procesado/scripts:/app/scripts 
+      - ./filtrado_y_procesado/data:/app/data 
+      - ./filtrado_y_procesado/output_del_proyecto:/output_on_host 
+    environment:
+      - MONGO_HOST=mongo 
+      - MONGO_DB_NAME=Waze
+      - MONGO_COLLECTION=Events 
+      - HADOOP_USER_NAME=root
+    networks:
+      - waze-net 
+
+
+    

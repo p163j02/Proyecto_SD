@@ -1,0 +1,48 @@
+graph TD
+
+    subgraph "Fase 0: Datos Existentes - Legado Tarea 1"
+        A[MongoDB Atlas o Local - Eventos Waze Crudos]
+    end
+
+    subgraph "Fase 1: Extracción y Pre-procesamiento"
+        direction LR
+        B(Ejecución de mongoexport - entrypoint.sh)
+        C[waze_eventos_mongo.json - archivo local]
+        D(Script Node.js: preprocesar_eventos.js - filtrado, traducción, comunas)
+        E[eventos_procesados_para_pig.csv - archivo local]
+    end
+
+    subgraph "Fase 2: Procesamiento con Pig - Hadoop"
+        direction LR
+        F(Carga CSV a HDFS - hdfs dfs -put)
+        G[Archivo CSV en HDFS - /user/root/input_data/...]
+        H(Script Pig: procesar_datos.pig - agregaciones y transformaciones)
+        I[Resultados agregados en HDFS - carpeta output/...]
+    end
+
+    subgraph "Fase 3: Obtención de Resultados - Host PC"
+        direction LR
+        J(Copia desde HDFS al contenedor - hdfs dfs -get)
+        K[Resultados en directorio montado del host - output_del_proyecto]
+    end
+
+    A -->|S1. Exporta datos| B
+    B -->|S2. Genera archivo| C
+    C -->|S3. Lee JSON| D
+    D -->|S4. Genera CSV limpio| E
+    E -->|S5. Sube a HDFS| F
+    F -->|S6. Almacena en| G
+    G -->|S7. Lee datos| H
+    H -->|S8. Guarda resultados| I
+    I -->|S9. Copia a directorio montado| J
+    J -->|S10. Disponibles en PC| K
+
+    classDef archivo fill:#D3D3D3,stroke:#333,stroke-width:1px;
+    classDef proceso fill:#ADD8E6,stroke:#333,stroke-width:2px;
+    classDef hdfs fill:#F4A261,stroke:#333,stroke-width:2px;
+    classDef hostpc fill:#90EE90,stroke:#333,stroke-width:2px;
+
+    class A,C,E,G,I,K archivo;
+    class B,D,F,H,J proceso;
+    class G,I hdfs;
+    class K hostpc;

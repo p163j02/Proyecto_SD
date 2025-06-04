@@ -109,3 +109,6 @@ Thumbs.db
 /report/*.log
 /report/*.out
 /report/*.synctex.gz
+
+output_del_proyecto
+analisis_de_tiempo.txt
