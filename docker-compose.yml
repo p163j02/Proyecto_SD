@@ -139,11 +139,11 @@ services:
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Ajusta la memoria si tu sistema es limitado
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" 
     ports:
       - "9200:9200"
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data # Persistir datos
+      - elasticsearch_data:/usr/share/elasticsearch/data 
     networks:
       - waze-net
 
@@ -163,9 +163,7 @@ services:
     image: logstash:7.17.10
     container_name: logstash
     volumes:
-      # Montamos la configuración de la pipeline
       - ./logstash/pipeline:/usr/share/logstash/pipeline/
-      # ¡CAMBIO IMPORTANTE! Apuntamos a la carpeta de salida de Pig
       - ./filtrado_y_procesado/output_del_proyecto:/data/pig_output
     depends_on:
       - elasticsearch
