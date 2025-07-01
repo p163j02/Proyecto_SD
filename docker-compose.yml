@@ -165,7 +165,32 @@ services:
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline/
       - ./filtrado_y_procesado/output_del_proyecto:/data/pig_output
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
     depends_on:
       - elasticsearch
     networks:
       - waze-net
+    ports:
+    - "12201:12201/udp"
+
+  api_gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    container_name: api_gateway_service
+    ports:
+      - "4000:4000"
+    networks:
+      - waze-net
+    depends_on:
+      - redis
+      - elasticsearch
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - PORT=4000
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://127.0.0.1:12201"

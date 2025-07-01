@@ -357,3 +357,133 @@ docker-compose up --build processing_pipeline
 ## Configuración de Hadoop
 
 Los archivos de configuración de Hadoop (`core-site.xml`, `hdfs-site.xml`, `mapred-site.xml`, `yarn-site.xml`) se encuentran en la carpeta `filtrado_y_procesado/config/` y son copiados al contenedor durante la construcción de la imagen. Están configurados para un modo pseudo-distribuido.
+
+# Visualizacion de los datos
+
+Este proyecto implementa un pipeline completo para la recolección, procesamiento, visualización y consulta optimizada de datos de tráfico de Waze en la Región Metropolitana. La arquitectura está orquestada con Docker Compose y utiliza un stack de tecnologías que incluye MongoDB, Hadoop/Pig, el stack ELK (Elasticsearch, Logstash, Kibana), Redis y Node.js.
+
+## Prerrequisitos
+
+- Docker instalado y en ejecución.
+- Docker Compose (se recomienda V2, que se usa con el comando `docker compose`).
+
+## Estructura del Proyecto
+
+- **/scraper**: Servicio de recolección de datos (Node.js).
+- **/db-loader**: Script para cargar datos iniciales a MongoDB (Node.js).
+- **/filtrado_y_procesado**: Pipeline de procesamiento con Hadoop y Apache Pig.
+- **/api_gateway**: API con capa de caché (Redis) para consultar los datos procesados (Node.js).
+- **/logstash**: Configuración de los pipelines de Logstash para la ingesta de datos y métricas.
+- **docker-compose.yml**: Archivo principal de orquestación.
+
+---
+
+## Guía de Ejecución Completa
+
+Sigue estos pasos en orden para levantar y probar todo el sistema. Ejecuta los comandos desde la terminal en la carpeta raíz del proyecto.
+
+### Paso 0: Limpieza del Entorno (Opcional)
+
+Si quieres empezar desde un estado completamente limpio, eliminando todos los contenedores, redes y volúmenes de ejecuciones anteriores, ejecuta:
+
+```bash
+docker compose down --volumes
+```
+
+### Paso 1: Configuración Inicial de Elasticsearch (Hacer solo una vez)
+
+Este paso prepara a Elasticsearch para que pueda interpretar los datos geográficos y crear los mapas de calor. Solo necesitas hacerlo la primera vez o después de una limpieza total con `--volumes`.
+
+1.  **Levantar Elasticsearch y Kibana:**
+    ```bash
+    docker compose up -d elasticsearch kibana api_gateway
+    ```
+2.  **Aplicar la Plantilla de Índice:**
+    - Abre Kibana en tu navegador: **http://localhost:5601**
+    - Navega a las Dev Tools: Menú (☰) > Management > **Dev Tools**.
+    - Pega y ejecuta el siguiente comando en la consola de Dev Tools:
+    ```json
+    PUT _index_template/eventos_waze_template
+    {
+      "index_patterns": ["eventos_waze*"],
+      "template": {
+        "mappings": {
+          "properties": {
+            "location": {
+              "type": "geo_point"
+            }
+          }
+        }
+      }
+    }
+    ```
+
+### Paso 2: Cargar y Procesar Datos
+
+Estos comandos preparan los datos para ser visualizados.
+
+1.  **Cargar Datos a MongoDB:**
+
+    - Este script carga el archivo estático `data/waze_70k_events.json` en MongoDB.
+
+    ```bash
+    docker compose run --rm db-loader
+    ```
+
+2.  **Procesar Datos con Pig:**
+    - Este servicio toma los datos de MongoDB, los procesa y genera el archivo `part-r-00000`.
+    ```bash
+    docker compose run --rm processing_pipeline
+    ```
+
+### Paso 3: Levantar Entorno de Visualización y API
+
+Este comando inicia todos los servicios restantes. Logstash comenzará automáticamente a ingestar los datos procesados y las métricas en Elasticsearch.
+
+```bash
+docker compose up --build -d
+```
+
+**Importante:** Después de ejecutar este comando, espera 2-3 minutos para que Logstash procese e ingeste todos los datos.
+
+---
+
+## Acceso a Servicios y Verificación
+
+Una vez que todo esté corriendo, puedes acceder a las diferentes partes del sistema.
+
+### Kibana (Visualización y Análisis)
+
+- **Página Principal:** [**http://localhost:5601**](http://localhost:5601)
+
+- **Rutas Directas Útiles:**
+
+  - **Dashboards:** [http://localhost:5601/app/dashboards](http://localhost:5601/app/dashboards)
+  - **Explorar Datos (Discover):** [http://localhost:5601/app/discover](http://localhost:5601/app/discover)
+  - **Dev Tools (Consola API):** [http://localhost:5601/app/dev_tools](http://localhost:5601/app/dev_tools)
+
+- **Verificación de Datos:** Para confirmar que los datos de incidentes se cargaron, ve a Dev Tools y ejecuta:
+  ```json
+  GET /eventos_waze/_count
+  ```
+  El `count` debería ser un número grande.
+
+### API Gateway (con Caché)
+
+Para probar la funcionalidad de la caché:
+
+1.  **Observa los logs de la API** en una terminal:
+
+    ```bash
+    docker compose logs -f api_gateway
+    ```
+
+2.  **Haz peticiones** en otra terminal para ver los "MISS" y "HIT":
+
+    ```bash
+    # Primera petición (debería mostrar "Cache MISS" en los logs)
+    curl http://localhost:4000/events/by_type/ACCIDENTE
+
+    # Segunda petición (debería mostrar "Cache HIT" en los logs)
+    curl http://localhost:4000/events/by_type/ACCIDENTE
+    ```

@@ -1,0 +1,5 @@
+- pipeline.id: incidents-pipeline
+  path.config: "/usr/share/logstash/pipeline/cache_metrics.conf"
+
+- pipeline.id: metrics-pipeline
+  path.config: "/usr/share/logstash/pipeline/logstash.conf"
